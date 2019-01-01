@@ -7,6 +7,7 @@ import scipy.optimize as opt
 
 N_AIR = 1
 BASE_INTENSITY = 2.0
+MAX_ANGLE = 90
 
 
 def load_intensity_data(filename):
@@ -18,7 +19,8 @@ def load_intensity_data(filename):
     data = data.dropna(axis='index')
     data['inc_angle'] = np.radians(data['inc_angle'])
     data = data.astype('float64')
-    data = data[data['inc_angle'] <= np.deg2rad(80)]
+    data = data[data['inc_angle'] <= np.deg2rad(MAX_ANGLE)]
+    #data = data['intensity'] = data - BASE_INTENSITY
     return data
 
 
@@ -85,7 +87,7 @@ def arbitrary_polarization_reflected_intensity(inc_angle, incidence_intensity, n
     r_ortho = ((np.sin(inc_angle - trans_angle))**2)/((np.sin(inc_angle + trans_angle))**2)
     parallel_rate = np.cos(polarization_angle) ** 2
     expected_intensity = (parallel_rate * r_parallel * incidence_intensity)\
-        + ((1 - parallel_rate) * r_ortho * incidence_intensity) + r_ortho + BASE_INTENSITY
+        + ((1 - parallel_rate) * r_ortho * incidence_intensity) + BASE_INTENSITY
     return expected_intensity
 
 
@@ -152,4 +154,4 @@ def predict_reflected_intensity(data, parallel_only = False, ortho_only = False)
 if __name__ == '__main__':
     ortho_data = load_intensity_data('./data/dielectric_reflectance_orthogonal_data_only.csv')
     parallel_data = load_intensity_data('./data/dielectric_reflectance_parallel_data_only.csv')
-    ortho_params = predict_reflected_intensity(parallel_data, parallel_only=True)
+    predict_reflected_intensity(ortho_data, ortho_only=True)

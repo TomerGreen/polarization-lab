@@ -7,7 +7,7 @@ import scipy.optimize as opt
 
 N_AIR = 1
 BASE_INTENSITY = 2.0
-MAX_ANGLE = 90
+MAX_ANGLE = 80
 
 
 def load_intensity_data(filename):
@@ -128,14 +128,17 @@ def predict_reflected_intensity(data, parallel_only = False, ortho_only = False)
     if parallel_only and not ortho_only:
         params, cov = fit_parallel_reflected_intensity(data['inc_angle'], data['intensity'])
         pol_angle = 0
+        pol_angle_err = 0
     elif ortho_only and not parallel_only:
         params, cov = fit_ortho_reflected_intensity(data['inc_angle'], data['intensity'])
         pol_angle = pi/2
+        pol_angle_err = 0
     else:
         params, cov = fit_aribtrary_polarization_reflected_intensity(data['inc_angle'], data['intensity'])
         pol_angle = params[2]
-    print("Predicted n2 is: " + str(params[1]))
-    print("Predicted polarization angle is: " + str(np.rad2deg(pol_angle)))
+        pol_angle_err = cov[2, 2]
+    print("Predicted n2 is: " + str(params[1]) + "±" + str(cov[1, 1]))
+    print("Predicted polarization angle is: " + str(np.rad2deg(pol_angle)) + "±" + str(pol_angle_err))
     print("Covariance matrix is: \n" + str(cov))
     rads_axis = pd.Series(np.arange(0, pi/2, 0.001))
     expected_intensity = rads_axis.apply(arbitrary_polarization_reflected_intensity,
@@ -145,7 +148,7 @@ def predict_reflected_intensity(data, parallel_only = False, ortho_only = False)
                  + str(round(params[1], 4)))
     plt.xlabel("Incidence Angle (rad)")
     plt.ylabel("Intensity (micro Amps)")
-    plt.scatter(data['inc_angle'], data['intensity'], s=3, c='red')
+    plt.scatter(data['inc_angle'], data['intensity'], s=5, c='red')
     plt.plot(rads_axis, expected_intensity)
     plt.show()
     return params
